@@ -255,6 +255,7 @@ function getBetsByUser(ids, metadata, user) {
 }
 
 function watchAllBets(user) {
+    alert("hi")
     displayElement("pass", "none");
     displayElement("betsAllUsers", "flex");
     getAllBets();
