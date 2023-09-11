@@ -634,6 +634,12 @@ function writeResults(inputPre, id, team, time) {
     val == '' ? writeElem.innerHTML = '' : writeElem.innerHTML = `${val} : ${team}  ${time}`;
 }
 
+function watchMaor(bet) {
+    var text = StaticForFirebaseUser.allBets[bet]["maor"].replaceAll('</br>', '');
+    alert(text);
+
+}
+
 function getBets(user) {
     document.getElementById("h1").innerHTML = "שלום " + breakline + user;
     document.getElementById("h1").style.textAlign = "center";
@@ -647,12 +653,13 @@ function getBets(user) {
     }
     for (i in StaticForFirebaseUser.allBets) {
         var row = table.insertRow();
+        id = StaticForFirebaseUser.allBets[i]["totalId"];
         type = StaticForFirebaseUser.allBets[i]["type"];
         var maorVal = StaticForFirebaseUser.allBets[i]["maor"];
-        console.log(maorVal)
-        maor = (typeof maorVal === 'undefined' || maorVal == '') ? 'אין פינה' : maorVal;
+        var maorBtn = `<button id="button${id}" onclick="watchMaor('${i}')">צפה בפינה</button>`;
+        maor = (typeof maorVal === 'undefined' || maorVal == '') ? 'אין פינה' : maorBtn;
         typeH = type == 'soccer bet' ? 'כדורגל' : 'כדורסל';
-        id = StaticForFirebaseUser.allBets[i]["totalId"];
+
         var awaybet = StaticForFirebaseUser.allBets[i]["away"];
         var homebet = StaticForFirebaseUser.allBets[i]["home"];
         body = type == 'soccer bet' ? StaticForFirebaseUser.allBets[i]["body"] : StaticForFirebaseUser.allBets[i]["body"][0] + breakline +
