@@ -255,7 +255,6 @@ function getBetsByUser(ids, metadata, user) {
 }
 
 function watchAllBets(user) {
-    alert("hi")
     displayElement("pass", "none");
     displayElement("betsAllUsers", "flex");
     getAllBets();
@@ -680,13 +679,14 @@ function getBets(user) {
             betAwayHT = createLabel("Away", awaybet) + '<input type="text"' + 'id="AwayHT' + id + `" onkeyup="writeResults('AwayHT', ${id},'${awaybet}',',')" style="width :25%" ${disabled}/>`;
             betHomeHT = createLabel("home", homebet) + '<input type="text"' + 'id="HomeHT' + id + `" onkeyup="writeResults('HomeHT', ${id},'${homebet}', ' - מחצית')" style="width : 25%" ${disabled}/>`;
         }
-        insertRowToTable(row, id, 0, "id", id, "betsCalass", 0)
+        var idDisplay = `${id} / ${StaticForFirebaseUser.allBets[i]["perYear"]}`
+        insertRowToTable(row, idDisplay, 0, "id", id, "betsCalass", 0)
         insertRowToTable(row, typeH, 1, "type", id, "betsCalass", 0)
         var elem = document.getElementById("type" + id);
         elem.setAttribute("betType", type);
         insertRowToTable(row, createTimer(time, id), 2, "hour", id, "betsCalass", 0);
-        insertRowToTable(row, betHomeHT + breakline + betHome, 3, "betH", id, "betsCalass1", 1);
-        insertRowToTable(row, betAwayHT + breakline + betAway, 4, "betA", id, "betsCalass1", 1);
+        insertRowToTable(row, betHomeHT + breakline + betHome, 3, "betH", id, "betsCalass", 1);
+        insertRowToTable(row, betAwayHT + breakline + betAway, 4, "betA", id, "betsCalass", 1);
         insertRowToTable(row, body, 5, "body", id, "betsCalass", 0);
         insertRowToTable(row, maor, 6, "bodyBet", id, "betsCalass", 0);
         insertRowToTable(row, flag, 7, id, 6, "betsCalass", 0);
