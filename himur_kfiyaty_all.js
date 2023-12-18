@@ -6,7 +6,8 @@ var breakline = '</br>'
 var trs = {};
 var usersTrs = [];
 var betsTrs = [];
-isUser = true;
+var isUser = true;
+var isFiltered = false;
 var chosenForFilter = "";
 class StaticForFirebase {
     static names = [];
@@ -28,24 +29,50 @@ class StaticForFirebaseUser {
 var userBets = [];
 var colors = ['#ADD8E6', 'yellow', 'grey', 'orange', '#FFF8DC', 'purple', '#7CFC00', '#00CED1'];
 
+function insertIntoList(elem) {
+    var l = document.createElement("list");
+    var ol = document.createElement("ol");
+
+    l.append(ol);
+    for (let i = 0; i < elem.length; i++) {
+        var y = document.createElement("LI");
+        var t = document.createTextNode(elem[i]);
+        y.appendChild(t);
+        ol.append(y);
+    }
+
+    return l;
+
+}
 
 function insertAllTable() {
     var TRs = isUser ? usersTrs : betsTrs;
+    var table = document.getElementById("betsAllUsers");
     for (var i in TRs) {
         for (j in trs) {
-            if (j.includes(TRs[i])) {
-                var elem = document.getElementById(j);
-                elem.innerHTML = "";
-                elem.remove();
+            if (isUser) {
+                if (j.includes(TRs[i])) {
+                    var elem = document.getElementById(j);
+                    elem.innerHTML = "";
+                    elem.remove();
+                }
+            } else {
+                if (trs[j][1].toString() == TRs[i]) {
+                    var elem = document.getElementById(j);
+                    elem.innerHTML = "";
+                    elem.remove();
+                }
+
+
             }
         }
-    }
-    var table = document.getElementById("betsAllUsers");
+    };
     for (i in trs) {
         var row = table.insertRow()
         row.id = i;
-        row.innerHTML = trs[i];
+        row.innerHTML = trs[i][0];
     }
+    isFiltered = false;
 }
 
 function filteringSelect() {
@@ -53,23 +80,31 @@ function filteringSelect() {
 }
 
 function filteringSelectByBet() {
-    var selectVal = document.getElementById("chooseFilter").value;
-    var filterArr = StaticForFirebase.UsersByBet;
+    var select = document.getElementById("chooseFilter");
+    var selectVal = select.value;
+    var filterArr = StaticForFirebase.betByUser;
     chosenForFilter = selectVal;
     var trSelected = [];
-    for (var i in betsTrs) {
-        // console.log(filterArr[usersTrs[i]])
-        for (var j in filterArr[betsTrs[i]]) {
-            var elemForWrite = document.getElementById(filterArr[betsTrs[i]][j]["user"] + betsTrs[i]);
-            trs[filterArr[betsTrs[i]][j]["user"] + betsTrs[i]] = elemForWrite.innerHTML;
-            elemForWrite.innerHTML = "";
-            elemForWrite.remove();
+    // console.log(filterArr[usersTrs[i]])
+    for (var i in filterArr) {
+        {
+            for (var j in filterArr[i]) {
+
+                if (document.getElementById(i + j)) {
+                    var elemForWrite = document.getElementById(i + j);
+                    var id = document.getElementById("id" + i + j).innerHTML;
+                    //var name = getKeyByValue(usersTrs, i)
+                    trs[i + j] = [elemForWrite.innerHTML, filterArr[i][j]["id"], getKeyByValue(filterArr, i)];
+                    elemForWrite.innerHTML = "";
+                    elemForWrite.remove();
+                }
+            }
         }
     }
 
     for (var i in trs) {
-        if (i.includes(selectVal)) {
-            trSelected[i] = trs[i];
+        if (String(trs[i][1]) == selectVal) {
+            trSelected[i] = trs[i][0];
         }
     }
     var table = document.getElementById("betsAllUsers");
@@ -78,14 +113,20 @@ function filteringSelectByBet() {
         row.id = i;
         document.getElementById(i).innerHTML = trSelected[i];
         id = document.getElementById("id" + i).innerHTML;
-        row.setAttribute("name", id + i);
+        row.setAttribute("name", id + getKeyByValue(filterArr, trSelected[i]))
     }
     betsTrs = [];
     betsTrs[0] = selectVal;
+    isFiltered = true;
+}
+
+function getKeyByValue(object, value) {
+    return Object.keys(object).find(key => value.includes(key));
 }
 
 function filteringSelectByUser() {
-    var selectVal = document.getElementById("chooseFilter").value;
+    var select = document.getElementById("chooseFilter");
+    var selectVal = select.value;
     var filterArr = StaticForFirebase.betByUser;
     chosenForFilter = selectVal;
     var trSelected = [];
@@ -93,8 +134,8 @@ function filteringSelectByUser() {
         // console.log(filterArr[usersTrs[i]])
         for (var j in filterArr[usersTrs[i]]) {
             var id = filterArr[usersTrs[i]][j]["id"];
-            var elemForWrite = document.getElementById(usersTrs[i] + id);
-            trs[usersTrs[i] + id] = elemForWrite.innerHTML;
+            var elemForWrite = document.getElementById(usersTrs[i] + j);
+            trs[usersTrs[i] + j] = [elemForWrite.innerHTML, usersTrs[i] + j, usersTrs[i]];
             elemForWrite.innerHTML = "";
             elemForWrite.remove();
         }
@@ -102,7 +143,7 @@ function filteringSelectByUser() {
 
     for (var i in trs) {
         if (i.includes(selectVal)) {
-            trSelected[i] = trs[i];
+            trSelected[i] = trs[i][0];
         }
     }
     var table = document.getElementById("betsAllUsers");
@@ -116,6 +157,7 @@ function filteringSelectByUser() {
     }
     usersTrs = [];
     usersTrs[0] = selectVal;
+    isFiltered = true;
 }
 
 function getAllBets() {
@@ -134,7 +176,9 @@ function getAllBets() {
 }
 
 function filteringByUser() {
-    insertAllTable();
+    if (isFiltered) {
+        insertAllTable();
+    }
     isUser = true;
     usersTrs = [];
     var select = document.getElementById("chooseFilter");
@@ -144,11 +188,13 @@ function filteringByUser() {
             insertIntoSelect(select, i, "All");
     }
     usersTrs = Object.keys(StaticForFirebase.betByUser);
-    betsTrs = Object.keys(StaticForFirebase.UsersByBet);
+    betsTrs = createNumArray(StaticForFirebase.UsersByBet);
 }
 
 function filteringByBet() {
-    insertAllTable();
+    if (isFiltered) {
+        insertAllTable();
+    }
     isUser = false;
     usersTrs = [];
     var select = document.getElementById("chooseFilter");
@@ -157,7 +203,7 @@ function filteringByBet() {
         if (!document.getElementById(i + "All"))
             insertIntoSelect(select, i, "All");
     }
-    betsTrs = Object.keys(StaticForFirebase.UsersByBet);
+    betsTrs = createNumArray(StaticForFirebase.UsersByBet);
     usersTrs = Object.keys(StaticForFirebase.betByUser);
 
 }
@@ -184,12 +230,9 @@ function getUsersByBet(ids) {
         if (!StaticForFirebase.UsersByBet[usersByBet[i][0]]) {
             StaticForFirebase.UsersByBet[usersByBet[i][0]] = [];
         }
+        StaticForFirebase.UsersByBet[usersByBet[i][0]].push(usersByBet[i][1])
 
     }
-    for (var i in usersByBet) {
-        StaticForFirebase.UsersByBet[[usersByBet[i][0]]].push(usersByBet[i][1])
-    }
-
 }
 
 function getBetsByUser(ids, metadata, user) {
@@ -224,34 +267,43 @@ function getBetsByUser(ids, metadata, user) {
                 var data = StaticForFirebase.betByUser[i][j];
                 var type = data["type"];
                 var id = data["id"];
-                row.id = i + id;
+                row.id = i + j;
                 var result = getBetById(id, type, metadata[id][4], StaticForFirebase.betByUser[i])
                 console.log(StaticForFirebase.betByUser[i][j]);
-                insertRowToTable(row, i, 0, "user", i + id, "betsCalass", 0);
-                colored_staus_background("user" + i + id, colors[count]);
-                insertRowToTable(row, id, 1, "id", i + id, "betsCalass", 0);
-                colored_staus_background("id" + i + id, colors[count]);
-                insertRowToTable(row, type, 2, "type", i + id, "betsCalass", 0);
-                colored_staus_background("type" + i + id, colors[count]);
-                insertRowToTable(row, createTimer(metadata[id][0], i + id), 3, "hour", i + id, "betsCalass", 0);
-                colored_staus_background("hour" + i + id, colors[count]);
-                insertRowToTable(row, metadata[id][1], 4, "home", i + id, "betsCalass", 1);
-                colored_staus_background("home" + i + id, colors[count]);
-                insertRowToTable(row, metadata[id][2], 5, "away", i + id, "betsCalass", 1);
-                colored_staus_background("away" + i + id, colors[count]);
-                var elem = document.getElementById("type" + i + id);
+                insertRowToTable(row, i, 0, "user", i + j, "betsCalass", 0);
+                colored_staus_background("user" + i + j, colors[count]);
+                insertRowToTable(row, id, 1, "id", i + j, "betsCalass", 0);
+                colored_staus_background("id" + i + j, colors[count]);
+                insertRowToTable(row, type, 2, "type", i + j, "betsCalass", 0);
+                colored_staus_background("type" + i + j, colors[count]);
+                insertRowToTable(row, createTimer(metadata[id][0], i + j), 3, "hour", i + j, "betsCalass", 0);
+                colored_staus_background("hour" + i + j, colors[count]);
+                insertRowToTable(row, metadata[id][1], 4, "home", i + j, "betsCalass", 1);
+                colored_staus_background("home" + i + j, colors[count]);
+                insertRowToTable(row, metadata[id][2], 5, "away", i + j, "betsCalass", 1);
+                colored_staus_background("away" + i + j, colors[count]);
+                var elem = document.getElementById("type" + i + j);
                 elem.setAttribute("betType", type);
-                var body = type == 'soccer bet' ? metadata[id][3] : metadata[id][3].join("<br>")
-                insertRowToTable(row, body, 6, "body", i + id, "betsCalass", 0);
-                colored_staus_background("body" + i + id, colors[count]);
-                insertRowToTable(row, result, 7, "Status", i + id, "betsCalass", 0);
-                colored_staus_background("Status" + i + id, colors[count]);
-                row.setAttribute("name", id + j);
+                var body = type == 'soccer bet' ? metadata[id][3] : insertIntoList(metadata[id][3]);
+                var maorBtn = type == 'soccer bet' ? body : `<button id="buttonMaor${id}" onclick="alert('${ body.textContent} ${body.innerText }')">צפה</button>`;
+                insertRowToTable(row, maorBtn, 6, "body", i + j, "betsCalass", 0);
+                colored_staus_background("body" + i + j, colors[count]);
+                insertRowToTable(row, result, 7, "Status", i + j, "betsCalass", 0);
+                colored_staus_background("Status" + i + j, colors[count]);
+                row.setAttribute("name", id + i);
                 row.setAttribute("username", i);
             }
         }
         count++;
     }
+}
+
+function createNumArray(arr) {
+    var arrNum = [];
+    for (var i in arr) {
+        arrNum.push(i);
+    }
+    return arrNum;
 }
 
 function watchAllBets(user) {
@@ -357,16 +409,16 @@ function insertRowToTable(row, data, count, attribute, user, classChosen, isButt
     c.innerHTML = data;
     c.id = attribute + user;
     c.style.textAlign = 'center';
-    if (attribute != 'id') {
-        if (attribute == 'body' && document.getElementById("type" + user).getAttribute("bettype") == 'basketball bet') {
-            c.style.textAlign = 'right';
-        }
+    // if (attribute != 'id') {
+    if (attribute == 'body' && document.getElementById("type" + user).getAttribute("bettype") == 'basketball bet') {
+        c.style.textAlign = 'right';
+        //}
     }
 
     c.setAttribute('class', classChosen)
     if (isButton == 2) {
         c.setAttribute('onclick', 'navigateBetButton(this)')
-        c.setAttribute('idBet', user)
+        c.setAttribute(attribute + user, user)
     } else if (isButton == 1) {
         c.setAttribute('type', 'text');
         c.setAttribute('placeholder', data);
