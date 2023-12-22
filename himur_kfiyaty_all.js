@@ -29,20 +29,12 @@ class StaticForFirebaseUser {
 var userBets = [];
 var colors = ['#ADD8E6', 'yellow', 'grey', 'orange', '#FFF8DC', 'purple', '#7CFC00', '#00CED1'];
 
-function insertIntoList(elem) {
-    var l = document.createElement("list");
-    var ol = document.createElement("ol");
-
-    l.append(ol);
-    for (let i = 0; i < elem.length; i++) {
-        var y = document.createElement("LI");
-        var t = document.createTextNode(elem[i]);
-        y.appendChild(t);
-        ol.append(y);
+function convertToString(elem) {
+    var str = '';
+    for (var i = 0; i < elem.length; i++) {
+        str += elem[i] + breakline;
     }
-
-    return l;
-
+    return str;
 }
 
 function insertAllTable() {
@@ -284,9 +276,9 @@ function getBetsByUser(ids, metadata, user) {
                 colored_staus_background("away" + i + j, colors[count]);
                 var elem = document.getElementById("type" + i + j);
                 elem.setAttribute("betType", type);
-                var body = type == 'soccer bet' ? metadata[id][3] : insertIntoList(metadata[id][3]);
-                var maorBtn = type == 'soccer bet' ? body : `<button id="buttonMaor${id}" onclick="alert('${ body.textContent} ${body.innerText }')">צפה</button>`;
-                insertRowToTable(row, maorBtn, 6, "body", i + j, "betsCalass", 0);
+                var body = type == 'soccer bet' ? metadata[id][3] : convertToString(metadata[id][3]);
+                // var maorBtn = type == 'soccer bet' ? body : `<button id="buttonMaor${id}" onclick="alert('${body}')">צפה</button>`;
+                insertRowToTable(row, body, 6, "body", i + j, "betsCalass", 0);
                 colored_staus_background("body" + i + j, colors[count]);
                 insertRowToTable(row, result, 7, "Status", i + j, "betsCalass", 0);
                 colored_staus_background("Status" + i + j, colors[count]);
@@ -410,7 +402,7 @@ function insertRowToTable(row, data, count, attribute, user, classChosen, isButt
     c.id = attribute + user;
     c.style.textAlign = 'center';
     // if (attribute != 'id') {
-    if (attribute == 'body' && document.getElementById("type" + user).getAttribute("bettype") == 'basketball bet') {
+    if ((attribute == 'body' && document.getElementById("type" + user).getAttribute("bettype") == 'basketball bet') || attribute.includes('betH') | attribute.includes('betA')) {
         c.style.textAlign = 'right';
         //}
     }
@@ -748,8 +740,8 @@ function getBets(user) {
         insertRowToTable(row, betAwayHT + breakline + betAway, 4, "betA", id, "betsCalass", 1);
         insertRowToTable(row, body, 5, "body", id, "betsCalass", 0);
         insertRowToTable(row, maor, 6, "bodyBet", id, "betsCalass", 0);
-        insertRowToTable(row, flag, 7, id, 6, "betsCalass", 0);
-        colored_staus(id + 6, color, "betsCalass");
+        insertRowToTable(row, flag, 7, "flag", id, "betsCalass", 0);
+        colored_staus("flag" + id, color, "betsCalass");
         insertRowToTable(row, btn, 8, "click", id, "betsCalass", isButton);
         insertRowToTable(row, userBet, 9, "bodybet", id, "betsCalass", 0);
         document.getElementById("click" + id).innerHTML = btn;
